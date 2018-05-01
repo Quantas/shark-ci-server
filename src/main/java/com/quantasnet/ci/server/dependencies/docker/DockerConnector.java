@@ -9,7 +9,6 @@ import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -28,9 +27,6 @@ public class DockerConnector {
     @Value("${docker.tls-verify}")
     private boolean tlsVerify;
 
-    @Autowired
-    private List<ContainerConfig> containers;
-
     private DockerClient dockerClient;
 
     @PostConstruct
@@ -41,11 +37,16 @@ public class DockerConnector {
                 .build();
 
         dockerClient = DockerClientBuilder.getInstance(config).build();
-
-        containers.forEach(this::createOrGetContainer);
     }
 
-    Container createOrGetContainer(final ContainerConfig config) {
+    public void shutdown(final ContainerConfig config) {
+        logger.info("Stopping {}", config.getName());
+        dockerClient.stopContainerCmd(config.getName()).exec();
+        logger.info("Removing {}", config.getName());
+        dockerClient.removeContainerCmd(config.getName()).exec();
+    }
+
+    public Container createOrGetContainer(final ContainerConfig config) {
         final List<Container> containersBefore = dockerClient.listContainersCmd().withShowAll(true).exec();
 
         if (containersBefore.stream().filter(container -> Arrays.asList(container.getNames()).contains("/" + config.getName())).count() < 1) {

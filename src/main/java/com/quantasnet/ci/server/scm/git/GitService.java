@@ -16,10 +16,10 @@ public class GitService {
 
     private Logger logger = LoggerFactory.getLogger(GitService.class);
 
-    public Repository getRepo(final RepoConfig repoConfig) throws IOException {
+    public Repository getRepo(final String gitFolder) throws IOException {
         final FileRepositoryBuilder repoBuilder = new FileRepositoryBuilder();
         repoBuilder.setMustExist(true);
-        repoBuilder.setGitDir(new File(repoConfig.getGitFolder()));
+        repoBuilder.setGitDir(new File(gitFolder));
         return repoBuilder.build();
     }
 
@@ -41,6 +41,9 @@ public class GitService {
                     }
 
                     Thread.sleep(10000);
+                } catch (final InterruptedException ie) {
+                    logger.info("Shutting Down");
+                    running = false;
                 } catch (final Exception e) {
                     logger.error("Exception! ", e);
                 }
