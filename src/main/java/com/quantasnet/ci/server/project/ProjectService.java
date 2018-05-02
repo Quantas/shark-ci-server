@@ -34,14 +34,13 @@ public class ProjectService {
     public void startProject(final String configLocation, final boolean classPath) {
         try {
             final Project project = projectParser.parseProject(configLocation, classPath);
-
-            // Start container dependencies
-            project.getContainers().forEach(dockerConnector::createOrGetContainer);
-
             final Repository repo = gitService.getRepo(project.getRepoLocation() + "\\.git");
 
             gitService.startRepoWatcher(repo, () -> {
                 logger.info("new commit!");
+
+                logger.info("Checking Docker Containers!");
+                project.getContainers().forEach(dockerConnector::createOrGetContainer);
 
                 project.getCommands().forEach(config -> {
                     try {
@@ -50,6 +49,9 @@ public class ProjectService {
                         logger.error("Error running command!", e);
                     }
                 });
+
+                logger.info("Stopping Docker Containers!");
+                project.getContainers().forEach(dockerConnector::stopContainer);
 
                 return null;
             });
