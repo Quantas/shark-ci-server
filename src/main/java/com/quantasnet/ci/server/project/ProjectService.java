@@ -1,5 +1,6 @@
 package com.quantasnet.ci.server.project;
 
+import com.quantasnet.ci.server.dependencies.docker.ContainerConfig;
 import com.quantasnet.ci.server.dependencies.docker.DockerConnector;
 import com.quantasnet.ci.server.exec.CommandExecutor;
 import com.quantasnet.ci.server.scm.git.GitService;
@@ -39,19 +40,25 @@ public class ProjectService {
             gitService.startRepoWatcher(repo, () -> {
                 logger.info("new commit!");
 
-                logger.info("Checking Docker Containers!");
-                project.getContainers().forEach(dockerConnector::createOrGetContainer);
-
                 project.getCommands().forEach(config -> {
                     try {
+                        logger.info("Checking Docker Dependency!");
+                        final ContainerConfig dockerContainerConfig = config.getDockerDependency();
+                        if (null != dockerContainerConfig) {
+                            dockerConnector.createOrGetContainer(dockerContainerConfig);
+                        }
+
                         commandExecutor.execute(config.getName(), config.getCommand(), project.getRepoLocation());
+
+                        if (null != dockerContainerConfig) {
+                            logger.info("Stopping Docker Containers!");
+                            dockerConnector.stopContainer(dockerContainerConfig);
+                        }
+
                     } catch (final InterruptedException | IOException e) {
                         logger.error("Error running command!", e);
                     }
                 });
-
-                logger.info("Stopping Docker Containers!");
-                project.getContainers().forEach(dockerConnector::stopContainer);
 
                 return null;
             });

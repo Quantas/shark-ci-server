@@ -4,40 +4,38 @@ commands:
   -
     name: 'postgres'
     command: "mvn.cmd -f dbunit/pom.xml -B -e -Pit-config,postgresql verify"
+    dockerDependency:
+      name: postgres
+      image: dbunit/dbunit-it-postgres:1.0.0
+      cmds:
+        - /docker-entrypoint.sh
+        - postgres
+      internalPort: 5432
+      externalPort: 5432
   -
     name: 'mysql'
     command: "mvn.cmd -f dbunit/pom.xml -B -e -Pit-config,mysql verify"
+    dockerDependency:
+      name: mysql
+      image: dbunit/dbunit-it-mysql:1.0.0
+      cmds:
+        - /entrypoint.sh
+        - mysqld
+      internalPort: 3306
+      externalPort: 3306
   -
-    name: 'sqlserver'
+    name: 'mssql41'
     command: "mvn.cmd -f dbunit/pom.xml -B -e -Pit-config,mssql41 verify"
+    dockerDependency:
+      name: mssql41
+      image: dbunit/dbunit-it-sqlserver:1.0.1
+      internalPort: 1433
+      externalPort: 1433
   -
-    name: 'oracle11g'
+    name: 'oracle'
     command: "mvn.cmd -f dbunit/pom.xml -B -e -Pit-config,oracle-ojdbc6 verify"
-
-containers:
-  -
-    name: mysql
-    image: dbunit/dbunit-it-mysql:1.0.0
-    cmds:
-      - /entrypoint.sh
-      - mysqld
-    internalPort: 3306
-    externalPort: 3306
-  -
-    name: postgres
-    image: dbunit/dbunit-it-postgres:1.0.0
-    cmds:
-      - /docker-entrypoint.sh
-      - postgres
-    internalPort: 5432
-    externalPort: 5432
-  -
-    name: sqlserver
-    image: dbunit/dbunit-it-sqlserver:1.0.1
-    internalPort: 1433
-    externalPort: 1433
-  -
-    name: oracle11g
-    image: dbunit/dbunit-it-oracle11g:1.0.1
-    internalPort: 1521
-    externalPort: 1521
+    dockerDependency:
+      name: oracle
+      image: dbunit/dbunit-it-oracle11g:1.0.1
+      internalPort: 1521
+      externalPort: 1521

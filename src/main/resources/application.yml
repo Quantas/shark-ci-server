@@ -1,4 +1,4 @@
 docker:
   host: tcp://localhost:2375
   tls-verify: false
-  sleep-time: 10000
+  sleep-time: 30000
