@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.io.IOException;
 
 @Service
@@ -35,7 +36,7 @@ public class ProjectService {
     public void startProject(final String configLocation, final boolean classPath) {
         try {
             final Project project = projectParser.parseProject(configLocation, classPath);
-            final Repository repo = gitService.getRepo(project.getRepoLocation() + "\\.git");
+            final Repository repo = gitService.getRepo(project.getRepoLocation() + File.separator + ".git");
 
             gitService.startRepoWatcher(repo, () -> {
                 logger.info("new commit!");
