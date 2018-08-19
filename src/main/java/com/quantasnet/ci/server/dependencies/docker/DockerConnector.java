@@ -7,6 +7,7 @@ import com.github.dockerjava.api.model.*;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
+import com.github.dockerjava.core.command.PullImageResultCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -64,6 +65,9 @@ public class DockerConnector {
                 portBindings = new Ports();
                 portBindings.bind(port, new Ports.Binding(null, config.getExternalPort()));
             }
+
+            logger.info("Pulling Container Image - {}", config.getImage());
+            dockerClient.pullImageCmd(config.getImage()).exec(new PullImageResultCallback()).awaitSuccess();
 
             CreateContainerCmd container = dockerClient.createContainerCmd(config.getImage())
                 .withExposedPorts(port)
